@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string notr="true">m3uDL</string>
   </property>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
@@ -19,13 +19,13 @@
      <x>10</x>
      <y>0</y>
      <width>471</width>
-     <height>221</height>
+     <height>231</height>
     </rect>
    </property>
    <property name="title">
-    <string>GroupBox</string>
+    <string>Fill in the blanks</string>
    </property>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="label_search">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -38,7 +38,7 @@
      <string>Search Phrase</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_3">
+   <widget class="QLineEdit" name="lineEdit_download_path">
     <property name="geometry">
      <rect>
       <x>123</x>
@@ -48,7 +48,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="label_url">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -61,7 +61,7 @@
      <string>URL</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="lineEdit_url">
     <property name="geometry">
      <rect>
       <x>123</x>
@@ -71,7 +71,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="label_download_path">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -84,7 +84,7 @@
      <string>Download Path</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
+   <widget class="QLineEdit" name="lineEdit_search">
     <property name="geometry">
      <rect>
       <x>123</x>
@@ -94,7 +94,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QToolButton" name="toolButton">
+   <widget class="QToolButton" name="toolButton_download_path">
     <property name="geometry">
      <rect>
       <x>430</x>
@@ -107,17 +107,17 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="pushButton_search">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>200</x>
       <y>170</y>
       <width>100</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
-     <string>Go</string>
+     <string>Search</string>
     </property>
    </widget>
   </widget>
@@ -127,7 +127,7 @@
      <x>490</x>
      <y>17</y>
      <width>281</width>
-     <height>571</height>
+     <height>511</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -145,7 +145,7 @@
       <x>0</x>
       <y>0</y>
       <width>279</width>
-      <height>569</height>
+      <height>509</height>
      </rect>
     </property>
     <widget class="QListWidget" name="listWidget">
@@ -154,7 +154,7 @@
        <x>0</x>
        <y>0</y>
        <width>281</width>
-       <height>571</height>
+       <height>511</height>
       </rect>
      </property>
     </widget>
@@ -166,7 +166,7 @@
      <x>780</x>
      <y>20</y>
      <width>16</width>
-     <height>571</height>
+     <height>511</height>
     </rect>
    </property>
    <property name="orientation">
