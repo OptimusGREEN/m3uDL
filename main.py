@@ -19,6 +19,7 @@ class MainWindow(QWidget):
         ui_file = QFile(path)
         ui_file.open(QFile.ReadOnly)
         loader.load(ui_file, self)
+        ui_file.reset()
         ui_file.close()
 
 
