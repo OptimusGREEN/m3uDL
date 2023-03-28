@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'form.ui'
+## Form generated from reading UI file 'mainwindow.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.4.2
 ##
@@ -34,18 +34,21 @@ class Ui_MainWindow(object):
         self.lineEdit_download_path = QLineEdit(self.groupBox)
         self.lineEdit_download_path.setObjectName(u"lineEdit_download_path")
         self.lineEdit_download_path.setGeometry(QRect(123, 133, 301, 21))
+        self.lineEdit_download_path.setFocusPolicy(Qt.ClickFocus)
         self.label_url = QLabel(self.groupBox)
         self.label_url.setObjectName(u"label_url")
         self.label_url.setGeometry(QRect(10, 67, 25, 16))
         self.lineEdit_url = QLineEdit(self.groupBox)
         self.lineEdit_url.setObjectName(u"lineEdit_url")
         self.lineEdit_url.setGeometry(QRect(123, 67, 301, 21))
+        self.lineEdit_url.setFocusPolicy(Qt.StrongFocus)
         self.label_download_path = QLabel(self.groupBox)
         self.label_download_path.setObjectName(u"label_download_path")
         self.label_download_path.setGeometry(QRect(10, 133, 101, 16))
         self.lineEdit_search = QLineEdit(self.groupBox)
         self.lineEdit_search.setObjectName(u"lineEdit_search")
         self.lineEdit_search.setGeometry(QRect(123, 100, 301, 21))
+        self.lineEdit_search.setFocusPolicy(Qt.ClickFocus)
         self.toolButton_download_path = QToolButton(self.groupBox)
         self.toolButton_download_path.setObjectName(u"toolButton_download_path")
         self.toolButton_download_path.setGeometry(QRect(430, 133, 26, 22))
@@ -78,7 +81,9 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Fill in the blanks", None))
         self.label_search.setText(QCoreApplication.translate("MainWindow", u"Search Phrase", None))
+        self.lineEdit_download_path.setPlaceholderText(QCoreApplication.translate("MainWindow", u"~/Downloads", None))
         self.label_url.setText(QCoreApplication.translate("MainWindow", u"URL", None))
+        self.lineEdit_url.setPlaceholderText(QCoreApplication.translate("MainWindow", u"http://myurl.com/myfile.m3u", None))
         self.label_download_path.setText(QCoreApplication.translate("MainWindow", u"Download Path", None))
         self.toolButton_download_path.setText(QCoreApplication.translate("MainWindow", u"...", None))
         self.pushButton_search.setText(QCoreApplication.translate("MainWindow", u"Search", None))

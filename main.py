@@ -4,8 +4,8 @@ from pathlib import Path
 import sys
 
 from PySide6.QtWidgets import QApplication, QWidget
-from PySide6.QtCore import QFile
-from PySide6.QtUiTools import QUiLoader
+from PySide6.QtCore import Slot
+from ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(QWidget):
@@ -13,14 +13,26 @@ class MainWindow(QWidget):
         super().__init__(parent)
         self.load_ui()
 
+        self.dl_dir = "~/Downloads"
+
+        self.ui.pushButton_search.clicked.connect(self._search)
+        self.ui.lineEdit_download_path.textChanged.connect(self._set_dl)
+        # self.ui.lineEdit_url.setFocus()
+
     def load_ui(self):
-        loader = QUiLoader()
-        path = Path(__file__).resolve().parent / "form.ui"
-        ui_file = QFile(path)
-        ui_file.open(QFile.ReadOnly)
-        loader.load(ui_file, self)
-        ui_file.reset()
-        ui_file.close()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+    @Slot()
+    def _search(self):
+        print(self.ui.lineEdit_search.text())
+
+    @Slot()
+    def _set_dl(self):
+        if self.ui.lineEdit_download_path.text():
+            self.dl_dir = self.ui.lineEdit_download_path.text()
+        print("Download path set to: {}".format(self.dl_dir))
+
 
 
 if __name__ == "__main__":

@@ -80,3 +80,17 @@ build/exe.macosx-13-arm64-3.11/
 dist/
 
 build/m3uDL-test/
+
+build/pyinstaller/
+
+*.user
+
+main.build/
+
+main.dist/
+
+main.bin
+
+main
+
+main.onefile-build/

@@ -47,6 +47,12 @@
       <height>21</height>
      </rect>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="placeholderText">
+     <string>~/Downloads</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_url">
     <property name="geometry">
@@ -70,6 +76,12 @@
       <height>21</height>
      </rect>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <property name="placeholderText">
+     <string>http://myurl.com/myfile.m3u</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_download_path">
     <property name="geometry">
@@ -92,6 +104,9 @@
       <width>301</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
     </property>
    </widget>
    <widget class="QToolButton" name="toolButton_download_path">
