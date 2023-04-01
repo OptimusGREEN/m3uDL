@@ -32,14 +32,20 @@ class MainWindow(QWidget):
         logging.debug("{}: {}".format(code, type(code)))
         return
 
+    def _populate_results(self, results):
+        pass #TODO
 
     @Slot()
     def _search(self):
         search_str = self.ui.lineEdit_search.text()
-        m3u = self.ui.lineEdit_url.text()
-        results = []
-        if not self._validate_url(m3u):
+        url = self.ui.lineEdit_url.text()
+        m3u = os.path.join(self.dl_dir, "tmp", "tmp.m3u")
+        if not self._validate_url(url):
             raise Exception("invalid m3u url")
+        if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
+            os.makedirs(os.path.join(self.dl_dir, "tmp"))
+        urllib.request.urlretrieve(url, m3u)
+        results = []
         with open(r"{}".format(m3u), 'r') as fp:
             url_line_no = None
             current_dict = {}
@@ -58,7 +64,9 @@ class MainWindow(QWidget):
                     current_dict["title"] = title
                     current_dict["logo"] = logo
                     url_line_no = l_no + 1
-        return results
+        for r in results:
+            print(r)
+        self._populate_results(results)
 
     @Slot()
     def _set_dl(self, dl_dir=None):
