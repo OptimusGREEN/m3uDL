@@ -16,8 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QGroupBox, QLabel, QLineEdit,
-    QListWidget, QListWidgetItem, QPushButton, QScrollArea,
-    QScrollBar, QSizePolicy, QToolButton, QWidget)
+    QListWidget, QListWidgetItem, QProgressBar, QPushButton,
+    QScrollArea, QScrollBar, QSizePolicy, QToolButton,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -55,6 +56,13 @@ class Ui_MainWindow(object):
         self.pushButton_search = QPushButton(self.groupBox)
         self.pushButton_search.setObjectName(u"pushButton_search")
         self.pushButton_search.setGeometry(QRect(200, 170, 100, 32))
+        self.progressBar_search = QProgressBar(self.groupBox)
+        self.progressBar_search.setObjectName(u"progressBar_search")
+        self.progressBar_search.setEnabled(True)
+        self.progressBar_search.setGeometry(QRect(190, 200, 118, 23))
+        self.progressBar_search.setMaximum(0)
+        self.progressBar_search.setValue(-1)
+        self.progressBar_search.setTextVisible(False)
         self.scrollArea = QScrollArea(MainWindow)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setGeometry(QRect(490, 17, 281, 511))
@@ -79,7 +87,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Fill in the blanks", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"OptiSEARCH", None))
         self.label_search.setText(QCoreApplication.translate("MainWindow", u"Search Phrase", None))
         self.lineEdit_download_path.setPlaceholderText(QCoreApplication.translate("MainWindow", u"~/Downloads", None))
         self.label_url.setText(QCoreApplication.translate("MainWindow", u"URL", None))

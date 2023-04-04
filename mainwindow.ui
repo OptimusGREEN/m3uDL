@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Fill in the blanks</string>
+    <string>OptiSEARCH</string>
    </property>
    <widget class="QLabel" name="label_search">
     <property name="geometry">
@@ -133,6 +133,28 @@
     </property>
     <property name="text">
      <string>Search</string>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar_search">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>200</y>
+      <width>118</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>0</number>
+    </property>
+    <property name="value">
+     <number>-1</number>
+    </property>
+    <property name="textVisible">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
