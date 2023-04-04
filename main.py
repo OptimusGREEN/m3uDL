@@ -10,6 +10,7 @@ from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from ui_mainwindow import Ui_MainWindow
 
 from listitem import ListItem
+from image import imageFromUrl, noImage
 
 home_directory = os.path.expanduser( '~' )
 
@@ -96,7 +97,6 @@ class MainWindow(QWidget):
         print(self.ui.listWidget_results.currentItem().url)
 
     def showSelection(self, *args, **kwargs):
-        from image import imageFromUrl
         self.ui.label_selected_title.setText(self.ui.listWidget_results.currentItem().text())
         self.ui.label_art.setPixmap(imageFromUrl(url=self.ui.listWidget_results.currentItem().logo))
         self.ui.groupBox_2.setVisible(True)
@@ -131,10 +131,19 @@ class MainWindow(QWidget):
                         current_dict["logo"] = logo
                         url_line_no = l_no + 1
             print("Total Results: ", len(results))
-            for r in results:
-                print(r)
-            self._populate_results(results)
-            self.ui.progressBar_search.setVisible(False)
+            if len(results) < 1:
+                restxt = "No results found."
+                self._populate_results([{"title": restxt,
+                                         "logo": noImage(),
+                                         "url": ""}])
+                self.ui.progressBar_search.setVisible(False)
+            else:
+                for r in results:
+                    logging.debug(r)
+                self._populate_results(results)
+                self.ui.progressBar_search.setVisible(False)
+
+        #### Start Here ####
         self.ui.listWidget_results.clear()
         if not len(self.ui.lineEdit_search.text()) > 1:
             print("search too short")
