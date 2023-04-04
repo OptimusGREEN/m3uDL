@@ -5,7 +5,7 @@ import sys
 import logging
 import urllib.request
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QProgressBar
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QProgressBar, QListWidgetItem
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from ui_mainwindow import Ui_MainWindow
 
@@ -65,7 +65,13 @@ class MainWindow(QWidget):
         return
 
     def _populate_results(self, results):
-        pass #TODO
+        pass
+        for i in results:
+            txt = i.get('title')
+            link = i.get('url')
+            item = QListWidgetItem(self.ui.listWidget_results)
+            item.setText(txt)
+            self.ui.listWidget_results.addItem(item)
 
     @Slot()
     def _search(self):

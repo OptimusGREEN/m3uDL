@@ -17,8 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QGroupBox, QLabel, QLineEdit,
     QListWidget, QListWidgetItem, QProgressBar, QPushButton,
-    QScrollArea, QScrollBar, QSizePolicy, QToolButton,
-    QWidget)
+    QScrollArea, QSizePolicy, QToolButton, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -65,21 +64,17 @@ class Ui_MainWindow(object):
         self.progressBar_search.setTextVisible(False)
         self.scrollArea = QScrollArea(MainWindow)
         self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setGeometry(QRect(490, 17, 281, 511))
+        self.scrollArea.setGeometry(QRect(490, 20, 301, 561))
         self.scrollArea.setAutoFillBackground(True)
         self.scrollArea.setStyleSheet(u"")
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 279, 509))
-        self.listWidget = QListWidget(self.scrollAreaWidgetContents)
-        self.listWidget.setObjectName(u"listWidget")
-        self.listWidget.setGeometry(QRect(0, 0, 281, 511))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 299, 559))
+        self.listWidget_results = QListWidget(self.scrollAreaWidgetContents)
+        self.listWidget_results.setObjectName(u"listWidget_results")
+        self.listWidget_results.setGeometry(QRect(0, 0, 301, 561))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.verticalScrollBar = QScrollBar(MainWindow)
-        self.verticalScrollBar.setObjectName(u"verticalScrollBar")
-        self.verticalScrollBar.setGeometry(QRect(780, 20, 16, 511))
-        self.verticalScrollBar.setOrientation(Qt.Vertical)
 
         self.retranslateUi(MainWindow)
 
