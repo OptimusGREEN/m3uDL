@@ -5,9 +5,11 @@ import sys
 import logging
 import urllib.request
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QProgressBar, QListWidgetItem
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel, QDialog, QPushButton, QMessageBox
 from PySide6.QtCore import Slot, QRunnable, QThreadPool
 from ui_mainwindow import Ui_MainWindow
+
+from listitem import ListItem
 
 home_directory = os.path.expanduser( '~' )
 
@@ -46,19 +48,25 @@ class MainWindow(QWidget):
 
         self.load_ui()
         self.ui.progressBar_search.setVisible(False)
+        self.ui.groupBox_2.setVisible(False)
 
         self.dl_dir = os.path.join(home_directory, "Downloads")
 
         self.ui.pushButton_search.clicked.connect(self._search)
         self.ui.lineEdit_download_path.textChanged.connect(self._set_dl)
         self.ui.toolButton_download_path.clicked.connect(self._browse_dl)
+        self.ui.listWidget_results.currentItemChanged.connect(self.printItemData)
+        self.ui.listWidget_results.currentItemChanged.connect(self.showSelection)
 
     def load_ui(self):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
     def _validate_url(self, url):
-        code = urllib.request.urlopen(url).getcode()
+        try:
+            code = urllib.request.urlopen(url).getcode()
+        except:
+            code = None
         if code == 200:
             return True
         logging.debug("{}: {}".format(code, type(code)))
@@ -67,21 +75,39 @@ class MainWindow(QWidget):
     def _populate_results(self, results):
         pass
         for i in results:
-            txt = i.get('title')
-            link = i.get('url')
-            item = QListWidgetItem(self.ui.listWidget_results)
-            item.setText(txt)
+            title = i.get('title')
+            item = ListItem(self.ui.listWidget_results)
+            item.setText(title)
+            item.setUrl(i.get('url'))
+            item.setLogo(i.get('logo'))
             self.ui.listWidget_results.addItem(item)
+
+        # for i in results:
+        #     txt = i.get('title')
+        #     link = i.get('url')
+        #     item = QListWidgetItem(self.ui.listWidget_results)
+        #     item.setText(txt)
+        #     self.ui.listWidget_results.addItem(item)
+
+    def printItemData(self, *args, **kwargs):
+        print(args, kwargs)
+        print(self.ui.listWidget_results.currentRow())
+        print(self.ui.listWidget_results.currentItem().text())
+        print(self.ui.listWidget_results.currentItem().url)
+
+    def showSelection(self, *args, **kwargs):
+        from image import imageFromUrl
+        self.ui.label_selected_title.setText(self.ui.listWidget_results.currentItem().text())
+        self.ui.label_art.setPixmap(imageFromUrl(url=self.ui.listWidget_results.currentItem().logo))
+        self.ui.groupBox_2.setVisible(True)
 
     @Slot()
     def _search(self):
+        search_str = self.ui.lineEdit_search.text()
+        url = self.ui.lineEdit_url.text()
+        m3u = os.path.join(self.dl_dir, "tmp", "tmp.m3u")
         def run():
             self.ui.progressBar_search.setVisible(True)
-            search_str = self.ui.lineEdit_search.text()
-            url = self.ui.lineEdit_url.text()
-            m3u = os.path.join(self.dl_dir, "tmp", "tmp.m3u")
-            if not self._validate_url(url):
-                raise Exception("invalid m3u url")
             if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
                 os.makedirs(os.path.join(self.dl_dir, "tmp"))
             urllib.request.urlretrieve(url, m3u)
@@ -109,8 +135,21 @@ class MainWindow(QWidget):
                 print(r)
             self._populate_results(results)
             self.ui.progressBar_search.setVisible(False)
-        worker = Worker(run)
-        self.threadpool.start(worker)
+        self.ui.listWidget_results.clear()
+        if not len(self.ui.lineEdit_search.text()) > 1:
+            print("search too short")
+            d = QMessageBox()
+            d.setText("Insufficient Search Criteria")
+            d.exec()
+        elif not self._validate_url(url):
+            print("invalid url: {}".format(url))
+            d = QMessageBox()
+            d.setText("URL seems invalid, Please check and try again.\nurl: {} ".format(url))
+            d.exec()
+        else:
+            worker = Worker(run)
+            self.threadpool.start(worker)
+
 
     @Slot()
     def _set_dl(self, dl_dir=None):
