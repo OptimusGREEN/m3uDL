@@ -52,6 +52,8 @@ class MainWindow(QWidget):
         self.load_ui()
         self.ui.progressBar_search.setVisible(False)
         self.ui.groupBox_2.setVisible(False)
+        self.ui.progressBar_dl.setVisible(False)
+        self.ui.label_dl_status.setVisible(False)
 
         self.dl_dir = os.path.join(home_directory, "Downloads")
 
@@ -113,6 +115,9 @@ class MainWindow(QWidget):
     def _download(self, *args, **kwargs):
         self.ui.label_dl_status.setText("Downloading file...")
         self.ui.pushButton_download.setEnabled(False)
+        self.ui.progressBar_dl.setValue(0)
+        self.ui.progressBar_dl.setVisible(True)
+        self.ui.label_dl_status.setVisible(True)
         title = self.ui.listWidget_results.currentItem().text()
         url = self.ui.listWidget_results.currentItem().url
         ext = os.path.splitext(url)[-1]
