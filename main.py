@@ -94,11 +94,15 @@ class MainWindow(QWidget):
         #     self.ui.listWidget_results.addItem(item)
 
     def printItemData(self, *args, **kwargs):
+        if not self.ui.listWidget_results.currentItem():
+            return
         print(self.ui.listWidget_results.currentRow())
         print(self.ui.listWidget_results.currentItem().text())
         print(self.ui.listWidget_results.currentItem().url)
 
     def showSelection(self, *args, **kwargs):
+        if not self.ui.listWidget_results.currentItem():
+            return
         self.ui.label_selected_title.setText(self.ui.listWidget_results.currentItem().text())
         pixmap = imageFromUrl(url=self.ui.listWidget_results.currentItem().logo)
         pixmap = pixmap.scaled(self.ui.label_art.width(), self.ui.label_art.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -157,6 +161,8 @@ class MainWindow(QWidget):
                         split1 = line.split('tvg-name="')[1]
                         split2 = split1.split('" tvg-logo="')
                         logo = split2[1].split('" ')[0]
+                        if not 'http' in logo:
+                            logo = noImage()
                         title = split2[0]
                         current_dict["title"] = title
                         current_dict["logo"] = logo
