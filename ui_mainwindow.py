@@ -86,9 +86,18 @@ class Ui_MainWindow(object):
         self.label_selected_title.setObjectName(u"label_selected_title")
         self.label_selected_title.setGeometry(QRect(250, 39, 201, 71))
         self.label_selected_title.setAlignment(Qt.AlignCenter)
+        self.label_selected_title.setWordWrap(True)
         self.label_art = QLabel(self.groupBox_2)
         self.label_art.setObjectName(u"label_art")
-        self.label_art.setGeometry(QRect(17, 15, 191, 301))
+        self.label_art.setGeometry(QRect(17, 15, 200, 300))
+        self.progressBar_dl = QProgressBar(self.groupBox_2)
+        self.progressBar_dl.setObjectName(u"progressBar_dl")
+        self.progressBar_dl.setGeometry(QRect(250, 280, 201, 23))
+        self.progressBar_dl.setValue(0)
+        self.label_dl_status = QLabel(self.groupBox_2)
+        self.label_dl_status.setObjectName(u"label_dl_status")
+        self.label_dl_status.setGeometry(QRect(250, 250, 201, 20))
+        self.label_dl_status.setAlignment(Qt.AlignCenter)
 
         self.retranslateUi(MainWindow)
 
@@ -108,6 +117,7 @@ class Ui_MainWindow(object):
         self.pushButton_download.setText(QCoreApplication.translate("MainWindow", u"DOWNLOAD", None))
         self.label_selected_title.setText(QCoreApplication.translate("MainWindow", u"title here", None))
         self.label_art.setText("")
+        self.label_dl_status.setText(QCoreApplication.translate("MainWindow", u"Status", None))
         pass
     # retranslateUi
 

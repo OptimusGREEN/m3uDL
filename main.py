@@ -5,12 +5,13 @@ import sys
 import logging
 import urllib.request
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QLabel, QDialog, QPushButton, QMessageBox
-from PySide6.QtCore import Slot, QRunnable, QThreadPool
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
+from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt
 from ui_mainwindow import Ui_MainWindow
 
 from listitem import ListItem
 from image import imageFromUrl, noImage
+from downloader import Downloader
 
 home_directory = os.path.expanduser( '~' )
 
@@ -45,6 +46,7 @@ class Worker(QRunnable):
 class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setFixedSize(800, 600)
         self.threadpool = QThreadPool()
 
         self.load_ui()
@@ -58,6 +60,7 @@ class MainWindow(QWidget):
         self.ui.toolButton_download_path.clicked.connect(self._browse_dl)
         self.ui.listWidget_results.currentItemChanged.connect(self.printItemData)
         self.ui.listWidget_results.currentItemChanged.connect(self.showSelection)
+        self.ui.pushButton_download.clicked.connect(self._download)
 
     def load_ui(self):
         self.ui = Ui_MainWindow()
@@ -91,15 +94,43 @@ class MainWindow(QWidget):
         #     self.ui.listWidget_results.addItem(item)
 
     def printItemData(self, *args, **kwargs):
-        print(args, kwargs)
         print(self.ui.listWidget_results.currentRow())
         print(self.ui.listWidget_results.currentItem().text())
         print(self.ui.listWidget_results.currentItem().url)
 
     def showSelection(self, *args, **kwargs):
         self.ui.label_selected_title.setText(self.ui.listWidget_results.currentItem().text())
-        self.ui.label_art.setPixmap(imageFromUrl(url=self.ui.listWidget_results.currentItem().logo))
+        pixmap = imageFromUrl(url=self.ui.listWidget_results.currentItem().logo)
+        pixmap = pixmap.scaled(self.ui.label_art.width(), self.ui.label_art.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.ui.label_art.setPixmap(pixmap)
         self.ui.groupBox_2.setVisible(True)
+
+    @Slot()
+    def _download(self, *args, **kwargs):
+        self.ui.label_dl_status.setText("Downloading file...")
+        self.ui.pushButton_download.setEnabled(False)
+        title = self.ui.listWidget_results.currentItem().text()
+        url = self.ui.listWidget_results.currentItem().url
+        ext = os.path.splitext(url)[-1]
+        out_file = "{}{}".format(title, ext)
+        dl_path = os.path.join(self.dl_dir, out_file)
+        self.downloader = Downloader(url, dl_path)
+        self.downloader.setTotalProgress.connect(self.ui.progressBar_dl.setMaximum)
+        self.downloader.setCurrentProgress.connect(self.ui.progressBar_dl.setValue)
+        self.downloader.succeeded.connect(self.downloadSucceeded)
+        self.downloader.finished.connect(self.downloadFinished)
+        self.downloader.start()
+
+    def downloadSucceeded(self):
+        # Set the progress at 100%.
+        self.ui.progressBar_dl.setValue(self.ui.progressBar_dl.maximum())
+        self.ui.label_dl_status.setText("The file has been downloaded!")
+
+    def downloadFinished(self):
+        # Restore the button.
+        self.ui.pushButton_download.setEnabled(True)
+        # Delete the thread when no longer needed.
+        del self.downloader
 
     @Slot()
     def _search(self):
@@ -107,7 +138,7 @@ class MainWindow(QWidget):
         url = self.ui.lineEdit_url.text()
         m3u = os.path.join(self.dl_dir, "tmp", "tmp.m3u")
         def run():
-            self.ui.progressBar_search.setVisible(True)
+            # self.ui.progressBar_search.setVisible(True)
             if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
                 os.makedirs(os.path.join(self.dl_dir, "tmp"))
             urllib.request.urlretrieve(url, m3u)
@@ -142,19 +173,26 @@ class MainWindow(QWidget):
                     logging.debug(r)
                 self._populate_results(results)
                 self.ui.progressBar_search.setVisible(False)
+                self.ui.pushButton_search.setEnabled(True)
 
         #### Start Here ####
         self.ui.listWidget_results.clear()
+        self.ui.progressBar_search.setVisible(True)
+        self.ui.pushButton_search.setEnabled(False)
         if not len(self.ui.lineEdit_search.text()) > 1:
             print("search too short")
             d = QMessageBox()
             d.setText("Insufficient Search Criteria")
             d.exec()
+            self.ui.progressBar_search.setVisible(False)
+            self.ui.pushButton_search.setEnabled(True)
         elif not self._validate_url(url):
             print("invalid url: {}".format(url))
             d = QMessageBox()
             d.setText("URL seems invalid, Please check and try again.\nurl: {} ".format(url))
             d.exec()
+            self.ui.progressBar_search.setVisible(False)
+            self.ui.pushButton_search.setEnabled(True)
         else:
             worker = Worker(run)
             self.threadpool.start(worker)
