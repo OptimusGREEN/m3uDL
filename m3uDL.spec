@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='m3uDL-test',
+    name='m3uDL',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -41,11 +41,11 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['icon.icns'],
+    icon=['m3uDL.ico'],
 )
 app = BUNDLE(
     exe,
-    name='m3uDL-test.app',
-    icon='/Users/john/Nextcloud/Common/KeepSafe/Graphics/icons/m3uDL/mac/m3uDL.icns',
+    name='m3uDL.app',
+    icon='m3uDL.icns',
     bundle_identifier=None,
 )
