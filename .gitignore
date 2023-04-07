@@ -96,3 +96,9 @@ main
 main.onefile-build/
 
 test.m3u
+
+build/win/
+
+clean.spec
+
+help.spec
