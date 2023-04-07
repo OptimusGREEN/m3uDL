@@ -1,9 +1,9 @@
 # This Python file uses the following encoding: utf-8
 import os
-from pathlib import Path
 import sys
 import logging
 import urllib.request
+import re
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt
@@ -12,6 +12,7 @@ from ui_mainwindow import Ui_MainWindow
 from listitem import ListItem
 from image import imageFromUrl, noImage
 from downloader import Downloader
+from parser import getID, getLogo, getTitle
 
 home_directory = os.path.expanduser( '~' )
 
@@ -157,21 +158,29 @@ class MainWindow(QWidget):
                 current_dict = {}
                 for l_no, line in enumerate(fp):
                     if url_line_no == l_no:
-                        current_dict["url"] = line.strip()
+                        u = re.sub(r'^.*?http', 'http', line)
+                        dlurl = u.strip()
+                        current_dict["url"] = dlurl
                         results.append(current_dict)
+                        print("URL: ", dlurl)
                         url_line_no = None
                         current_dict = {}
                         continue
                     if search_str.lower() in line.lower():
-                        split1 = line.split('tvg-name="')[1]
-                        split2 = split1.split('" tvg-logo="')
-                        logo = split2[1].split('" ')[0]
-                        if not 'http' in logo:
-                            logo = noImage()
-                        title = split2[0]
+                        print(line)
+                        try:
+                            title = getTitle(line)
+                            print("Title: ", title)
+                        except:
+                            title = getID(line)
+                            print("Title: ", title)
+                        logo = getLogo(line)
+                        print("Logo: ", logo)
                         current_dict["title"] = title
                         current_dict["logo"] = logo
                         url_line_no = l_no + 1
+
+
             print("Total Results: ", len(results))
             if len(results) < 1:
                 restxt = "No results found."
@@ -179,6 +188,7 @@ class MainWindow(QWidget):
                                          "logo": noImage(),
                                          "url": ""}])
                 self.ui.progressBar_search.setVisible(False)
+                self.ui.pushButton_search.setEnabled(True)
             else:
                 for r in results:
                     logging.debug(r)
