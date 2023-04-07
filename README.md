@@ -1,6 +1,7 @@
 # m3uDL
 
-Search large m3u files based on search criteria and select items to download
+Search large m3u files based on search criteria and select items to download.
+Written in Python, run main.py to use.
 
 1. Enter a url to an m3u file (Ideally VOD)
 2. Enter Search criteria
