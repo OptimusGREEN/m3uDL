@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('form.ui', '.')],
+    datas=[('mainwindow.ui', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -46,6 +46,6 @@ exe = EXE(
 app = BUNDLE(
     exe,
     name='m3uDL-test.app',
-    icon='icon.icns',
+    icon='/Users/john/Nextcloud/Common/KeepSafe/Graphics/icons/m3uDL/mac/m3uDL.icns',
     bundle_identifier=None,
 )
