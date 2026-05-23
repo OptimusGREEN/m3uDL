@@ -5,7 +5,7 @@ import logging
 import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import unquote, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request, url2pathname, urlopen
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt, QSettings
@@ -52,6 +52,7 @@ class MainWindow(QWidget):
         self.setFixedSize(800, 600)
         self.threadpool = QThreadPool()
         self.settings = QSettings("OptimusGREEN", "m3uDL")
+        self.dl_dir = os.path.join(home_directory, "Downloads")
 
         self.load_ui()
         self._load_persisted_inputs()
@@ -59,8 +60,6 @@ class MainWindow(QWidget):
         self.ui.groupBox_2.setVisible(False)
         self.ui.progressBar_dl.setVisible(False)
         self.ui.label_dl_status.setVisible(False)
-
-        self.dl_dir = os.path.join(home_directory, "Downloads")
 
         self.ui.pushButton_search.clicked.connect(self._search)
         self.ui.lineEdit_download_path.textChanged.connect(self._set_dl)
@@ -240,18 +239,33 @@ class MainWindow(QWidget):
     @Slot()
     def _set_dl(self, dl_dir=None):
         if dl_dir and isinstance(dl_dir, str):
-            parsed_dl_dir = urlparse(dl_dir)
-            if parsed_dl_dir.scheme == "file":
-                dl_dir = unquote(parsed_dl_dir.path)
+            dl_dir = self._normalize_dl_dir(dl_dir)
+        elif dl_dir is not None and not isinstance(dl_dir, str):
+            dl_dir = str(dl_dir)
+
         if not dl_dir:
-            if self.ui.lineEdit_download_path.text():
-                self.dl_dir = self.ui.lineEdit_download_path.text()
-        else:
-            if self.ui.lineEdit_download_path.text() != dl_dir:
-                self.ui.lineEdit_download_path.setText(dl_dir)
-            self.dl_dir = dl_dir
+            dl_dir = self.ui.lineEdit_download_path.text()
+        if not dl_dir:
+            dl_dir = self.dl_dir
+
+        if self.ui.lineEdit_download_path.text() != dl_dir:
+            self.ui.lineEdit_download_path.setText(dl_dir)
+        self.dl_dir = dl_dir
         self.settings.setValue("download_path", self.dl_dir)
         print("Download path set to: {}".format(self.dl_dir))
+
+    def _normalize_dl_dir(self, dl_dir):
+        if dl_dir and isinstance(dl_dir, str):
+            parsed_dl_dir = urlparse(dl_dir)
+            if parsed_dl_dir.scheme == "file":
+                path = unquote(parsed_dl_dir.path or "")
+                if parsed_dl_dir.netloc:
+                    path = "//{}{}".format(parsed_dl_dir.netloc, path)
+                path = url2pathname(path)
+                if os.name == "nt" and re.match(r"^/[A-Za-z]:", path):
+                    path = path[1:]
+                return path or dl_dir
+        return dl_dir
 
     @Slot()
     def _save_url(self, url):
