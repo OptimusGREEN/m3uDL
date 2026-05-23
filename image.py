@@ -8,11 +8,23 @@ def noImage():
 
 def imageFromUrl(url, *args, **kwargs):
     pixmap = QPixmap()
-    request = requests.get(url)
-    code = request.status_code
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        request = requests.get(url, headers=headers, timeout=10, verify=False)
+        code = request.status_code
+    except Exception as e:
+        print("Error fetching image: ", e)
+        code = None
+
     print("Status Code: ", code, " - type: ", type(code))
     if not code == 200:
-        request = requests.get(noImage())
+        try:
+            request = requests.get(noImage(), headers=headers, timeout=10, verify=False)
+        except Exception as e:
+            print("Error fetching fallback image: ", e)
+            return pixmap
     pixmap.loadFromData(request.content)
     return pixmap
 

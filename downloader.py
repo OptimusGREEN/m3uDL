@@ -1,7 +1,8 @@
  # This code is courtesy of:
  # https://pythonassets.com/posts/download-file-with-progress-bar-pyqt-pyside/
 
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
+import ssl
 
 from PySide6.QtCore import QThread, Signal
 
@@ -24,7 +25,14 @@ class Downloader(QThread):
         readBytes = 0
         chunkSize = 1024
         # Open the URL address.
-        with urlopen(self._url) as r:
+        req = Request(
+            self._url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+        )
+        context = ssl._create_unverified_context()
+        with urlopen(req, context=context) as r:
             # Tell the window the amount of bytes to be downloaded.
             self.setTotalProgress.emit(int(r.info()["Content-Length"]))
             with open(self._filename, "ab") as f:
