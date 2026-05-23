@@ -73,11 +73,80 @@ class MainWindow(QWidget):
     def load_ui(self):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Adjust geometry of existing widgets to make room for Xtream Codes inputs
+        self.ui.groupBox.setFixedHeight(230)
+        self.ui.groupBox_2.setGeometry(10, 260, 471, 320)
+        self.ui.label_url.setGeometry(20, 35, 25, 16)
+        self.ui.lineEdit_url.setGeometry(133, 35, 301, 21)
+        self.ui.label_search.setGeometry(20, 65, 90, 16)
+        self.ui.lineEdit_search.setGeometry(133, 65, 301, 21)
+        self.ui.label_download_path.setGeometry(20, 95, 101, 16)
+        self.ui.lineEdit_download_path.setGeometry(133, 95, 301, 21)
+        self.ui.toolButton_download_path.setGeometry(440, 95, 26, 22)
+        
+        # Move search button and progress bar
+        self.ui.pushButton_search.setGeometry(210, 160, 100, 32)
+        self.ui.progressBar_search.setGeometry(200, 195, 118, 23)
+        
+        # Add Radio Buttons for Mode Selection
+        from PySide6.QtWidgets import QRadioButton, QButtonGroup, QLineEdit, QLabel
+        
+        self.radio_m3u = QRadioButton("M3U URL", self.ui.groupBox)
+        self.radio_m3u.setGeometry(133, 8, 90, 20)
+        self.radio_m3u.setChecked(True)
+        
+        self.radio_xtream = QRadioButton("Xtream API", self.ui.groupBox)
+        self.radio_xtream.setGeometry(240, 8, 120, 20)
+        
+        self.source_group = QButtonGroup(self)
+        self.source_group.addButton(self.radio_m3u)
+        self.source_group.addButton(self.radio_xtream)
+        
+        # Add Username and Password widgets
+        self.label_username = QLabel("Username", self.ui.groupBox)
+        self.label_username.setGeometry(20, 125, 80, 16)
+        self.lineEdit_username = QLineEdit(self.ui.groupBox)
+        self.lineEdit_username.setGeometry(133, 125, 120, 21)
+        self.lineEdit_username.setPlaceholderText("username")
+        
+        self.label_password = QLabel("Password", self.ui.groupBox)
+        self.label_password.setGeometry(265, 125, 60, 16)
+        self.lineEdit_password = QLineEdit(self.ui.groupBox)
+        self.lineEdit_password.setGeometry(325, 125, 109, 21)
+        self.lineEdit_password.setPlaceholderText("password")
+        self.lineEdit_password.setEchoMode(QLineEdit.Password)
+        
+        # Hide Xtream widgets by default
+        self.label_username.hide()
+        self.lineEdit_username.hide()
+        self.label_password.hide()
+        self.lineEdit_password.hide()
+        
+        # Connect toggle signals
+        self.radio_m3u.toggled.connect(self._toggle_mode)
+
+    def _toggle_mode(self):
+        from PySide6.QtWidgets import QLineEdit
+        if self.radio_m3u.isChecked():
+            self.ui.label_url.setText("URL")
+            self.ui.lineEdit_url.setPlaceholderText("http://myurl.com/myfile.m3u")
+            self.label_username.hide()
+            self.lineEdit_username.hide()
+            self.label_password.hide()
+            self.lineEdit_password.hide()
+        else:
+            self.ui.label_url.setText("Host")
+            self.ui.lineEdit_url.setPlaceholderText("http://myhost.com:8080")
+            self.label_username.show()
+            self.lineEdit_username.show()
+            self.label_password.show()
+            self.lineEdit_password.show()
 
     def _validate_url(self, url):
         parsed_url = urlparse(url)
         if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
-            logging.debug("Invalid URL format: %s", url)
+            logging.debug("Invalid URL format")
             return False
 
         request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
@@ -161,6 +230,11 @@ class MainWindow(QWidget):
     def _search(self):
         search_str = self.ui.lineEdit_search.text()
         url = self.ui.lineEdit_url.text()
+        if self.radio_xtream.isChecked():
+            host = url.rstrip('/')
+            username = self.lineEdit_username.text()
+            password = self.lineEdit_password.text()
+            url = f"{host}/get.php?username={username}&password={password}&type=m3u_plus&output=ts"
         m3u = os.path.join(self.dl_dir, "tmp", "tmp.m3u")
         def run():
             # self.ui.progressBar_search.setVisible(True)
