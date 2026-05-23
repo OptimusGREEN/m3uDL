@@ -2,12 +2,13 @@
 import os
 import sys
 import logging
-import urllib.request
-import urllib.error
 import re
+from urllib.error import HTTPError, URLError
+from urllib.parse import unquote, urlparse
+from urllib.request import Request, url2pathname, urlopen
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt
+from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt, QSettings
 from ui_mainwindow import Ui_MainWindow
 
 from listitem import ListItem
@@ -50,17 +51,20 @@ class MainWindow(QWidget):
         super().__init__(parent)
         self.setFixedSize(800, 600)
         self.threadpool = QThreadPool()
+        self.settings = QSettings("OptimusGREEN", "m3uDL")
+        self.dl_dir = os.path.join(home_directory, "Downloads")
 
         self.load_ui()
+        self._load_persisted_inputs()
         self.ui.progressBar_search.setVisible(False)
         self.ui.groupBox_2.setVisible(False)
         self.ui.progressBar_dl.setVisible(False)
         self.ui.label_dl_status.setVisible(False)
 
-        self.dl_dir = os.path.join(home_directory, "Downloads")
-
         self.ui.pushButton_search.clicked.connect(self._search)
         self.ui.lineEdit_download_path.textChanged.connect(self._set_dl)
+        self.ui.lineEdit_url.textChanged.connect(self._save_url)
+        self.ui.lineEdit_search.textChanged.connect(self._save_search)
         self.ui.toolButton_download_path.clicked.connect(self._browse_dl)
         self.ui.listWidget_results.currentItemChanged.connect(self.printItemData)
         self.ui.listWidget_results.currentItemChanged.connect(self.showSelection)
@@ -140,26 +144,23 @@ class MainWindow(QWidget):
             self.lineEdit_password.show()
 
     def _validate_url(self, url):
-        if not url.startswith("http://") and not url.startswith("https://"):
+        parsed_url = urlparse(url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            logging.debug("Invalid URL format: %s", url)
             return False
+
+        request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
         try:
-            import ssl
-            req = urllib.request.Request(
-                url,
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
-            )
-            context = ssl._create_unverified_context()
-            with urllib.request.urlopen(req, context=context, timeout=10) as response:
-                code = response.getcode()
-        except urllib.error.HTTPError as e:
-            # Server responded with a status code (e.g. 884, 403, etc.) - it is reachable!
-            print("Validation HTTP status code:", e.code)
-            code = e.code
-        except Exception as e:
-            print("Validation connection error:", e)
-            code = None
-        if code is not None:
+            code = urlopen(request).getcode()
+        except HTTPError as exc:
+            code = exc.code
+        except URLError as exc:
+            logging.debug("Validation request failed: %s", exc)
+            return False
+
+        if 200 <= code < 400:
             return True
+        logging.debug("{}: {}".format(code, type(code)))
         return False
 
     def _populate_results(self, results):
@@ -239,23 +240,9 @@ class MainWindow(QWidget):
             # self.ui.progressBar_search.setVisible(True)
             if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
                 os.makedirs(os.path.join(self.dl_dir, "tmp"))
-            req = urllib.request.Request(
-                url,
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
-            )
-            import ssl
-            context = ssl._create_unverified_context()
-            try:
-                with urllib.request.urlopen(req, context=context, timeout=30) as response:
-                    data = response.read()
-            except urllib.error.HTTPError as e:
-                print("Download HTTP status code:", e.code)
-                data = e.read()
-            except Exception as e:
-                print("Download connection error:", e)
-                data = b""
-            with open(m3u, "wb") as f:
-                f.write(data)
+            request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
+            with urlopen(request) as response, open(m3u, "wb") as playlist_file:
+                playlist_file.write(response.read())
             results = []
             with open(r"{}".format(m3u), 'r') as fp:
                 url_line_no = None
@@ -325,13 +312,50 @@ class MainWindow(QWidget):
 
     @Slot()
     def _set_dl(self, dl_dir=None):
+        if dl_dir and isinstance(dl_dir, str):
+            dl_dir = self._normalize_dl_dir(dl_dir)
+        elif dl_dir is not None and not isinstance(dl_dir, str):
+            dl_dir = str(dl_dir)
+
         if not dl_dir:
-            if self.ui.lineEdit_download_path.text():
-                self.dl_dir = self.ui.lineEdit_download_path.text()
-        else:
+            dl_dir = self.ui.lineEdit_download_path.text()
+        if not dl_dir:
+            dl_dir = self.dl_dir
+
+        if self.ui.lineEdit_download_path.text() != dl_dir:
             self.ui.lineEdit_download_path.setText(dl_dir)
-            self.dl_dir = dl_dir
+        self.dl_dir = dl_dir
+        self.settings.setValue("download_path", self.dl_dir)
         print("Download path set to: {}".format(self.dl_dir))
+
+    def _normalize_dl_dir(self, dl_dir):
+        if dl_dir and isinstance(dl_dir, str):
+            parsed_dl_dir = urlparse(dl_dir)
+            if parsed_dl_dir.scheme == "file":
+                path = unquote(parsed_dl_dir.path or "")
+                if parsed_dl_dir.netloc:
+                    path = "//{}{}".format(parsed_dl_dir.netloc, path)
+                path = url2pathname(path)
+                if os.name == "nt" and re.match(r"^/[A-Za-z]:", path):
+                    path = path[1:]
+                return path or dl_dir
+        return dl_dir
+
+    @Slot()
+    def _save_url(self, url):
+        self.settings.setValue("url", url)
+
+    @Slot()
+    def _save_search(self, search):
+        self.settings.setValue("search", search)
+
+    def _load_persisted_inputs(self):
+        saved_url = self.settings.value("url", "", type=str)
+        saved_search = self.settings.value("search", "", type=str)
+        saved_download_path = self.settings.value("download_path", self.dl_dir, type=str)
+        self.ui.lineEdit_url.setText(saved_url)
+        self.ui.lineEdit_search.setText(saved_search)
+        self._set_dl(saved_download_path)
 
     @Slot()
     def _browse_dl(self):
