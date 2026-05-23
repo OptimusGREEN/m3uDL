@@ -4,7 +4,7 @@ import sys
 import logging
 import re
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
@@ -239,6 +239,10 @@ class MainWindow(QWidget):
 
     @Slot()
     def _set_dl(self, dl_dir=None):
+        if dl_dir and isinstance(dl_dir, str):
+            parsed_dl_dir = urlparse(dl_dir)
+            if parsed_dl_dir.scheme == "file":
+                dl_dir = unquote(parsed_dl_dir.path)
         if not dl_dir:
             if self.ui.lineEdit_download_path.text():
                 self.dl_dir = self.ui.lineEdit_download_path.text()
