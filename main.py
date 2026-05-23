@@ -146,7 +146,7 @@ class MainWindow(QWidget):
     def _validate_url(self, url):
         parsed_url = urlparse(url)
         if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
-            logging.debug("Invalid URL format: %s", url)
+            logging.debug("Invalid URL format")
             return False
 
         request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
