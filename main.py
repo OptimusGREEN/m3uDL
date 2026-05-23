@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import urllib.request
+import urllib.error
 import re
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
@@ -143,7 +144,6 @@ class MainWindow(QWidget):
             return False
         try:
             import ssl
-            import urllib.error
             req = urllib.request.Request(
                 url,
                 headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
@@ -244,7 +244,6 @@ class MainWindow(QWidget):
                 headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
             )
             import ssl
-            import urllib.error
             context = ssl._create_unverified_context()
             try:
                 with urllib.request.urlopen(req, context=context, timeout=30) as response:
