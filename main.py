@@ -2,8 +2,10 @@
 import os
 import sys
 import logging
-import urllib.request
 import re
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen, urlretrieve
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt
@@ -70,14 +72,24 @@ class MainWindow(QWidget):
         self.ui.setupUi(self)
 
     def _validate_url(self, url):
+        parsed_url = urlparse(url)
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            logging.debug("Invalid URL format: %s", url)
+            return False
+
+        request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
         try:
-            code = urllib.request.urlopen(url).getcode()
-        except:
-            code = None
-        if code == 200:
+            code = urlopen(request).getcode()
+        except HTTPError as exc:
+            code = exc.code
+        except URLError as exc:
+            logging.debug("Validation request failed: %s", exc)
+            return False
+
+        if 200 <= code < 400:
             return True
         logging.debug("{}: {}".format(code, type(code)))
-        return
+        return False
 
     def _populate_results(self, results):
         pass
@@ -151,7 +163,7 @@ class MainWindow(QWidget):
             # self.ui.progressBar_search.setVisible(True)
             if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
                 os.makedirs(os.path.join(self.dl_dir, "tmp"))
-            urllib.request.urlretrieve(url, m3u)
+            urlretrieve(url, m3u)
             results = []
             with open(r"{}".format(m3u), 'r') as fp:
                 url_line_no = None
