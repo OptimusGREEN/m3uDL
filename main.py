@@ -5,10 +5,10 @@ import logging
 import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen, urlretrieve
+from urllib.request import Request, urlopen
 
 from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt
+from PySide6.QtCore import Slot, QRunnable, QThreadPool, Qt, QSettings
 from ui_mainwindow import Ui_MainWindow
 
 from listitem import ListItem
@@ -51,8 +51,10 @@ class MainWindow(QWidget):
         super().__init__(parent)
         self.setFixedSize(800, 600)
         self.threadpool = QThreadPool()
+        self.settings = QSettings("OptimusGREEN", "m3uDL")
 
         self.load_ui()
+        self._load_persisted_inputs()
         self.ui.progressBar_search.setVisible(False)
         self.ui.groupBox_2.setVisible(False)
         self.ui.progressBar_dl.setVisible(False)
@@ -62,6 +64,8 @@ class MainWindow(QWidget):
 
         self.ui.pushButton_search.clicked.connect(self._search)
         self.ui.lineEdit_download_path.textChanged.connect(self._set_dl)
+        self.ui.lineEdit_url.textChanged.connect(self._save_url)
+        self.ui.lineEdit_search.textChanged.connect(self._save_search)
         self.ui.toolButton_download_path.clicked.connect(self._browse_dl)
         self.ui.listWidget_results.currentItemChanged.connect(self.printItemData)
         self.ui.listWidget_results.currentItemChanged.connect(self.showSelection)
@@ -163,7 +167,9 @@ class MainWindow(QWidget):
             # self.ui.progressBar_search.setVisible(True)
             if not os.path.exists(os.path.join(self.dl_dir, "tmp")):
                 os.makedirs(os.path.join(self.dl_dir, "tmp"))
-            urlretrieve(url, m3u)
+            request = Request(url, headers={"User-Agent": "m3uDL/1.0"})
+            with urlopen(request) as response, open(m3u, "wb") as playlist_file:
+                playlist_file.write(response.read())
             results = []
             with open(r"{}".format(m3u), 'r') as fp:
                 url_line_no = None
@@ -237,9 +243,27 @@ class MainWindow(QWidget):
             if self.ui.lineEdit_download_path.text():
                 self.dl_dir = self.ui.lineEdit_download_path.text()
         else:
-            self.ui.lineEdit_download_path.setText(dl_dir)
+            if self.ui.lineEdit_download_path.text() != dl_dir:
+                self.ui.lineEdit_download_path.setText(dl_dir)
             self.dl_dir = dl_dir
+        self.settings.setValue("download_path", self.dl_dir)
         print("Download path set to: {}".format(self.dl_dir))
+
+    @Slot()
+    def _save_url(self, url):
+        self.settings.setValue("url", url)
+
+    @Slot()
+    def _save_search(self, search):
+        self.settings.setValue("search", search)
+
+    def _load_persisted_inputs(self):
+        saved_url = self.settings.value("url", "", type=str)
+        saved_search = self.settings.value("search", "", type=str)
+        saved_download_path = self.settings.value("download_path", self.dl_dir, type=str)
+        self.ui.lineEdit_url.setText(saved_url)
+        self.ui.lineEdit_search.setText(saved_search)
+        self._set_dl(saved_download_path)
 
     @Slot()
     def _browse_dl(self):
